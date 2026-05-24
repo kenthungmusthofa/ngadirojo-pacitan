@@ -1,0 +1,1073 @@
+```html
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ngadirojo Pacitan Geo-Portal & Dashboard Sejarah</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        indonesia: {
+                            red: '#ef4444',
+                            white: '#ffffff',
+                            gold: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React and ReactDOM CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel CDN for compiling JSX in-browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .serif-title {
+            font-family: 'Cinzel', serif;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+        @keyframes waveGlow {
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 0.45; }
+        }
+        @keyframes flagFlutter {
+            0% { transform: skewY(0deg); }
+            50% { transform: skewY(1.5deg); }
+            100% { transform: skewY(0deg); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+        .animate-flag {
+            animation: flagFlutter 3s ease-in-out infinite;
+        }
+        .bg-batik-pattern {
+            background-image: radial-gradient(circle at 1px 1px, rgba(239, 68, 68, 0.08) 1.5px, transparent 0);
+            background-size: 20px 20px;
+        }
+        /* Custom scrollbar for chat box */
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #ef4444;
+            border-radius: 99px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-red-600 selection:text-white overflow-x-hidden">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Data Terpadu Kecamatan Ngadirojo (Lorok), Pacitan beserta Sejarah & Mitologinya
+        const ngadirojoPacitanData = {
+            name: "Kecamatan Ngadirojo (Lorok)",
+            regency: "Kabupaten Pacitan",
+            province: "Jawa Timur",
+            tagline: "Bumi Lorok: Bumi Pusaka, Bahari Eksotis & Ketangguhan Agraris-Maritim",
+            description: "Ngadirojo, atau yang secara historis dikenal dengan nama legendaris Bumi Lorok, merupakan wilayah kecamatan potensial di ujung timur Kabupaten Pacitan. Kawasan subur ini dikaruniai gugusan perbukitan karst pelindung naga, jembatan biru melengkung Pantai Soge yang megah, serta peradaban bersejarah yang didirikan atas tetesan keringat para ksatria, pejuang kemerdekaan, dan kearifan para sesepuh adat.",
+            area: "95,91 km²",
+            population: "Sekitar 46.800 Jiwa",
+            elevation: "5 - 150 meter dpl (dataran pantai hingga perbukitan)",
+            distanceToCapital: "39 Km ke arah Timur dari Pusat Pemerintahan Pacitan",
+            borders: {
+                utara: "Kecamatan Slahung (Kabupaten Ponorogo)",
+                timur: "Kecamatan Sudimoro",
+                selatan: "Samudera Hindia (Laut Lepas Selatan Jawa)",
+                barat: "Kecamatan Tulakan"
+            },
+            history: {
+                originText: "Berdasarkan pitutur luhur para sesepuh, nama 'Lorok' memiliki dua riwayat asal-usul. Pertama, berasal dari kata Jawa 'Loro-Loro' (Dua Penderitaan) yang merujuk pada beratnya perjuangan para pelarian prajurit Pangeran Diponegoro yang babat alas di wilayah timur Pacitan ini sebelum akhirnya menemukan kemakmuran dan kedamaian. Versi kedua mengaitkannya dengan topografi sungai besar yang mengalir deras menyusuri lembah curam, dalam istilah lokal digambarkan sebagai air yang 'mlorok' (meluncur ke bawah) menuju samudera lepas.",
+                timeline: [
+                    { era: "Abad Ke-17", title: "Babat Alas Lorok", desc: "Prajurit dari sisa pasukan Kesultanan Mataram Islam mulai menyisir hutan belantara di bagian timur Pacitan untuk menghindari kejaran musuh dan mendirikan pemukiman agraris pertama." },
+                    { era: "Era Perang Diponegoro (1825–1830)", title: "Pelarian Prajurit Sandi", desc: "Para pengikut setia Pangeran Diponegoro bergerak mundur ke arah pantai selatan dan menetap di Lorok, menyebarkan ajaran Islam, memperkuat rasa nasionalisme anti-kolonial, serta mengajarkan bela diri tradisional." },
+                    { era: "Masa Kolonial Belanda", title: "Sentra Gula Merah & Kopi", desc: "Pemerintah kolonial mencoba mengeksploitasi hasil perkebunan kelapa dan kopi di pegunungan utara Lorok, namun menghadapi perlawanan pasif dan sabotase gerilya dari para petani lokal." },
+                    { era: "Pembangunan JLS Modern", title: "Gerbang Bahari Timur", desc: "Pembangunan Jalur Lintas Selatan (JLS) secara masif menghubungkan Ngadirojo dengan jaringan nasional, mengubah wajah ekonomi kawasan pantai selatan Pacitan." }
+                ],
+                figures: [
+                    { name: "Ki Ageng Lorok (Eyang Gagak Pranolo)", role: "Tokoh Pendiri & Penyebar Agama", bio: "Seorang ksatria pengembara keturunan bangsawan yang melakukan babat alas spiritual di wilayah muara Kali Lorok. Beliau dikenal arif, mengajarkan masyarakat tata cara bertani kelapa murni, dan menetapkan aturan perlindungan pohon demi keberlanjutan hidup warga." },
+                    { name: "Mbah Ampok (Kyai Ampok)", role: "Pelindung Rimba & Penjaga Keamanan", bio: "Seorang tokoh sakti mandraguna berkepribadian herois pejuang rakyat yang bertugas mengamankan kawasan Lorok dari gangguan hewan buas pegunungan serta perampok kiriman pihak penjajah. Makam dan peninggalannya dihormati warga sebagai simbol ketangguhan fisik." }
+                ],
+                myths: [
+                    { title: "Siluman Buaya Putih Kali Lorok", location: "Muara Soge & Kali Lorok", desc: "Mitos yang mengisahkan keberadaan sosok buaya putih gaib yang menjaga keseimbangan pintu muara sungai pertemuan dengan laut selatan. Nelayan tradisional percaya jika air sungai tiba-tiba tenang di musim hujan, buaya tersebut sedang bersandar dan warga dilarang melaut atau menyeberang tanpa berdoa memohon izin keselamatan kepada Sang Pencipta." },
+                    { title: "Pusaka Naga Nogosari", location: "Bukit Nogosari", desc: "Kepercayaan lokal menceritakan bahwa puncak tertinggi Gunung Nogosari sebenarnya merupakan persemayaman naga raksasa gaib pembawa kemakmuran. Mitos ini melarang perusakan hutan atau penambangan liar di kawasan bukit tersebut agar sang naga tidak murka dan mendatangkan longsor atau badai tsunami laut selatan." },
+                    { title: "Kondominium Mistis Watu Bale", location: "Tebing Pesisir Watu Bale", desc: "Gugusan batu karang raksasa di tengah laut yang berbentuk menyerupai balai sidang (bale) tradisional diyakini warga sebagai tempat rapat gaib para pengawal Kanjeng Ratu Kidul. Hingga kini, keasrian bebatuan karang tersebut dijaga ketat oleh masyarakat adat setempat." }
+                ]
+            },
+            economics: [
+                { title: "Destinasi Wisata Bahari JLS", desc: "Pantai Soge dengan laguna indahnya, Pantai Siwil, Pantai Pidakan, dan Pantai Watu Bale yang menjadi magnet utama turis.", icon: "waves" },
+                { title: "Gula Kelapa & Gula Aren", desc: "Produksi nira manis murni dari pepohonan kelapa pesisir yang diolah secara tradisional menjadi gula cetak merah bermutu tinggi.", icon: "sugar" },
+                { title: "Kuliner Kolong Klithek", desc: "Camilan renyah melingkar berbahan singkong basah dari Desa Bodag dan Cangkring yang gurih dan melegenda.", icon: "cookie" },
+                { title: "Pengrajin Batu Akik Mulia", desc: "Desa Cokrokembang sebagai pusat pemotongan batu mulia berkualitas tinggi khas pegunungan selatan.", icon: "gem" }
+            ],
+            culture: [
+                { title: "Seni Musik Oglor", origin: "Desa Wonokarto", desc: "Kesenian musik perkusi bambu tradisional yang melahirkan harmoni suara ketukan khas pedesaan, dimainkan beramai-ramai sebagai simbol kegotongroyongan warga Wonokarto.", icon: "music" },
+                { title: "Seni Jangkrik Genggong", origin: "Desa Sidomulyo", desc: "Seni pertunjukan tari dan nyanyian pesisir yang dibawakan secara humoris dan penuh keceriaan. Menggambarkan kebersamaan para nelayan pesisir Sidomulyo pasca-melaut.", icon: "bug" },
+                { title: "Upacara Adat Rokat Laut Soge", origin: "Pesisir Sidomulyo", desc: "Tradisi pelarungan sesaji ke laut selatan sebagai wujud syukur nelayan atas keselamatan dan melimpahnya tangkapan ikan samudera.", icon: "anchor" }
+            ],
+            villages: [
+                { name: "Wonokarto", potential: "Gula Kelapa Tradisional & Seni Musik Oglor", detail: "Desa perbukitan rindang penghasil gula kelapa murni dan tempat lahirnya kesenian Oglor yang mendunia." },
+                { name: "Sidomulyo", potential: "Wisata Pantai Soge & Seni Jangkrik Genggong", detail: "Pusat pariwisata bahari unggulan dengan jembatan melengkung ikonik serta rumah dari pertunjukan ceria Jangkrik Genggong." },
+                { name: "Bodag", potential: "Sentra Industri Kolong Klithek", detail: "Desa pelopor pengolahan singkong menjadi camilan khas bolong tengah 'Kolong Klithek'." },
+                { name: "Cangkring", potential: "Pertanian Singkong & Hortikultura", detail: "Pemasok utama singkong unggul berkualitas tinggi untuk kebutuhan pangan olahan lokal." },
+                { name: "Hadiwarno", potential: "Pertanian Padi Terpadu & Kelapa Dalam", detail: "Kawasan persawahan subur di hilir sungai yang memiliki sistem irigasi teknis mandiri." },
+                { name: "Ngadirojo", potential: "Pusat Perdagangan & Jasa Pasar Lorok", detail: "Kawasan perkotaan terpadu dengan fasilitas publik lengkap seperti Puskesmas, Polsek, dan Pasar Lorok." },
+                { name: "Wonosobo", potential: "Penyadapan Nira Aren & Kopi Rakyat", detail: "Penghasil gula aren bubuk berkualitas tinggi dari pohon aren yang tumbuh liar alami." },
+                { name: "Wonoasri", potential: "Perkebunan Cengkih & Kakao", detail: "Terletak di dataran tinggi berudara sejuk dengan komoditas perkebunan bernilai tinggi." },
+                { name: "Bogoharjo", potential: "Sentra Budidaya Kambing PE (Etawa)", detail: "Terkenal dengan peternakan kambing peranakan etawa berkualitas juara kontes." },
+                { name: "Cokrokembang", potential: "Kerajinan Batu Mulia & Akik Pacitan", detail: "Sentra pengrajin tatah gosok batu alam bernilai estetika tinggi khas Pacitan." },
+                { name: "Hadiluwih", potential: "Pertanian Hortikultura & Cabai Rawit", detail: "Memasok kebutuhan sayur mayur harian segar untuk wilayah Lorok dan sekitarnya." },
+                { name: "Nogosari", potential: "Wisata Camping Hutan Pinus & Alam Bukit", detail: "Destinasi wisata petualangan dengan spot berkemah yang langsung menghadap Samudera Hindia." },
+                { name: "Pagerejo", potential: "Sawah Terasering Tradisional", detail: "Menampilkan keindahan sawah berundak yang memanjakan mata turis pelintas JLS." },
+                { name: "Tanjunglor", potential: "Kopi Robusta & Hasil Hutan Kemasyarakatan", detail: "Kelompok tani hutan aktif memproses biji kopi lokal dengan metode ramah lingkungan." },
+                { name: "Tanjungpuro", potential: "Kerajinan Anyaman Serat Pandan", detail: "Ibu-ibu pengerajin anyaman daun pandan hutan untuk tas dan tikar dekoratif." },
+                { name: "Wiyoro", potential: "Pertokoan Lintas Batas & Kuliner Khas", detail: "Pintu gerbang jalur selatan timur yang padat ruko dan warung makan tradisional." },
+                { name: "Wonodadi Kulon", potential: "Budidaya Madu Alami & Kakao", detail: "Sentra lebah madu lanceng hutan dengan rasa asam manis berkhasiat tinggi." },
+                { name: "Wonodadi Wetan", potential: "Hutan Kayu Jati Rakyat & Ternak Sapi", detail: "Mengembangkan kemandirian pakan silase hijau untuk penggemukan sapi potong unggulan." }
+            ]
+        };
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('home');
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedVillage, setSelectedVillage] = useState(null);
+            const [currentDate, setCurrentDate] = useState('');
+            const [coconutCount, setCoconutCount] = useState(15);
+            const [calculatedSugar, setCalculatedSugar] = useState(null);
+            const [mascotMood, setMascotMood] = useState('wave'); // wave, think, happy, salute
+            const [showNotification, setShowNotification] = useState(false);
+            const [notificationMsg, setNotificationMsg] = useState('');
+
+            // AI Chat states
+            const [messages, setMessages] = useState([
+                {
+                    role: 'assistant',
+                    text: 'Sugeng Rawuh di Bumi Lorok! Saya Si Lorok, maskot kelapa muda berblangkon yang bangga dengan NKRI. Ingin tahu tentang seni Musik Oglor dari Wonokarto, keceriaan Jangkrik Genggong dari Sidomulyo, atau sejarah mistis Buaya Putih Soge dan Ki Ageng Lorok? Tanyakan saja pada saya, jal!'
+                }
+            ]);
+            const [inputMessage, setInputMessage] = useState('');
+            const [isAiLoading, setIsAiLoading] = useState(false);
+
+            const chatEndRef = useRef(null);
+
+            // Auto Scroll Chat
+            useEffect(() => {
+                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [messages, isAiLoading]);
+
+            // Live Clock
+            useEffect(() => {
+                const updateTime = () => {
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                    setCurrentDate(new Date().toLocaleDateString('id-ID', options));
+                };
+                updateTime();
+                const interval = setInterval(updateTime, 1000);
+                return () => clearInterval(interval);
+            }, []);
+
+            const triggerNotification = (msg) => {
+                setNotificationMsg(msg);
+                setShowNotification(true);
+                setTimeout(() => setShowNotification(false), 4000);
+            };
+
+            const handleCalculateSugar = (e) => {
+                e.preventDefault();
+                setMascotMood('happy');
+                const yieldSugar = (coconutCount * 1.2).toFixed(1);
+                setCalculatedSugar({
+                    total: yieldSugar,
+                    earnings: (yieldSugar * 18000).toLocaleString('id-ID'),
+                    desc: `Estimasi produksi gula kelapa cetak harian dari ${coconutCount} pohon produktif yang diproses secara berkala oleh penderes di Ngadirojo.`
+                });
+                triggerNotification("Simulasi produksi gula kelapa diperbarui!");
+            };
+
+            const handleSendMessage = async (e) => {
+                e.preventDefault();
+                if (!inputMessage.trim()) return;
+
+                const userQuery = inputMessage;
+                setMessages(prev => [...prev, { role: 'user', text: userQuery }]);
+                setInputMessage('');
+                setIsAiLoading(true);
+                setMascotMood('think');
+
+                const systemPrompt = `
+                    Anda adalah "Si Lorok", maskot resmi yang ramah, patriotik, nasionalis, dan cerdas dari Kecamatan Ngadirojo (Lorok), Kabupaten Pacitan, Jawa Timur.
+                    Karakteristik Anda:
+                    - Selalu menyapa dengan "Sugeng Rawuh!" atau menggunakan dialek ramah khas Jawa Timuran ("jal", "rek", "mas", "mbak").
+                    - Sangat mencintai NKRI, menjunjung tinggi nilai Pancasila, kebudayaan luhur, dan semangat gotong royong merah-putih.
+                    - Anda hanya membahas tentang Kecamatan Ngadirojo Pacitan (Lorok). Jika ditanya tentang daerah lain (seperti Ngadirojo Wonogiri), jelaskan secara sopan bahwa Anda adalah maskot khusus Lorok Pacitan dan arahkan kembali ke keindahan Pacitan.
+                    
+                    Pengetahuan Khusus Yang Harus Anda Kuasai:
+                    1. Seni Budaya & Tradisi Khas:
+                       - "Seni Musik Oglor" dari Desa Wonokarto: Merupakan seni musik bambu perkusi tradisional yang melahirkan harmoni ketukan khas pedesaan, dimainkan beramai-ramai melambangkan kerukunan warga Wonokarto.
+                       - "Seni Jangkrik Genggong" dari Desa Sidomulyo: Kesenian tari dan lagu pesisir bercita rasa humoris, jenaka, melambangkan suka cita kegotongroyongan nelayan Sidomulyo setelah melaut.
+                       - "Upacara Adat Rokat Laut Soge" dari Sidomulyo: Tradisi pelarungan sesaji ke laut selatan sebagai wujud syukur nelayan.
+                    2. Sejarah, Tokoh & Legenda Lorok:
+                       - Asal nama Lorok dari kata 'Loro-Loro' (perjuangan menderita berbuah manis) atau 'mlorok' (air sungai yang meluncur deras ke laut).
+                       - "Ki Ageng Lorok" (Eyang Gagak Pranolo): Pelopor babat alas, penyebar Islam, penetap aturan perlindungan pohon kelapa pesisir.
+                       - "Mbah Ampok" (Kyai Ampok): Ksatria sakti pelindung rimba dari hewan buas dan bandit kolonial Belanda.
+                       - "Mitos Buaya Putih Soge": Penjaga gaib pintu muara Kali Lorok, tidak boleh dilewati tanpa berdoa jika aliran air tiba-tiba tenang di musim hujan.
+                       - "Pusaka Naga Nogosari": Legenda naga pelindung badai tsunami yang bersemayam di bukit Nogosari.
+                       - "Misteri Watu Bale": Gugusan karang yang berbentuk balai sidang mistis diyakini tempat perkumpulan khodam laut selatan.
+                    3. Sektor Wisata: Pantai Soge (dengan jembatan melengkung biru di JLS), Pantai Siwil, Pantai Pidakan, Pantai Watu Bale.
+                    4. Kuliner Khas: Kolong Klithek (camilan bulat bolong tengah berbahan singkong dari Bodag/Cangkring).
+                    5. Desa (18 Desa): Wonokarto, Sidomulyo, Bodag, Cangkring, Hadiwarno, Ngadirojo, Wonosobo, Wonoasri, Bogoharjo, Cokrokembang, Hadiluwih, Nogosari, Pagerejo, Tanjunglor, Tanjungpuro, Wiyoro, Wonodadi Kulon, Wonodadi Wetan.
+                    
+                    Aturan Penulisan:
+                    - Jawab dengan bahasa Indonesia yang hangat, bersemangat nasionalis, informatif, dan diselingi sedikit istilah lokal yang sopan.
+                    - Gunakan format list (poin-poin) yang rapi agar mudah dibaca pengguna di layar ponsel.
+                `;
+
+                const apiKey = ""; // Runtime automatically binds the API key here
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+                const fetchWithRetry = async (url, options, retries = 5, delay = 1000) => {
+                    try {
+                        const res = await fetch(url, options);
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                        return await res.json();
+                    } catch (error) {
+                        if (retries > 0) {
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            return fetchWithRetry(url, options, retries - 1, delay * 2);
+                        }
+                        throw error;
+                    }
+                };
+
+                try {
+                    const responseData = await fetchWithRetry(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: userQuery }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] }
+                        })
+                    });
+
+                    const aiReply = responseData.candidates?.[0]?.content?.parts?.[0]?.text || "Aduh jal, koneksi saya agak tersendat. Silakan tanyakan sekali lagi ya!";
+                    setMessages(prev => [...prev, { role: 'assistant', text: aiReply }]);
+                    setMascotMood('happy');
+                } catch (err) {
+                    setMessages(prev => [...prev, { role: 'assistant', text: "Maaf lur, sistem AI saya sedang beristirahat sejenak akibat kendala jaringan. Tapi saya, Si Lorok, selalu siap membantu Anda menjelajahi sejarah dan keindahan Ngadirojo Pacitan!" }]);
+                    setMascotMood('salute');
+                } finally {
+                    setIsAiLoading(false);
+                }
+            };
+
+            const filteredVillages = ngadirojoPacitanData.villages.filter(v =>
+                v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                v.potential.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            // Mascot SVG Generator
+            const renderMascotSVG = (size = "w-24 h-24") => {
+                const isThinking = mascotMood === 'think';
+                const isHappy = mascotMood === 'happy';
+                const isSalute = mascotMood === 'salute';
+
+                return (
+                    <svg className={`${size} transition-all duration-500 transform hover:scale-110 drop-shadow-[0_8px_16px_rgba(239,68,68,0.35)]`} viewBox="0 0 100 100">
+                        <defs>
+                            <radialGradient id="coconutGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stopColor="#10b981" />
+                                <stop offset="70%" stopColor="#047857" />
+                                <stop offset="100%" stopColor="#064e3b" />
+                            </radialGradient>
+                            <linearGradient id="blangkonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#b45309" />
+                                <stop offset="50%" stopColor="#78350f" />
+                                <stop offset="100%" stopColor="#451a03" />
+                            </linearGradient>
+                            <linearGradient id="indonesiaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#ef4444" />
+                                <stop offset="50%" stopColor="#ef4444" />
+                                <stop offset="50.1%" stopColor="#ffffff" />
+                                <stop offset="100%" stopColor="#ffffff" />
+                            </linearGradient>
+                        </defs>
+
+                        {/* Body */}
+                        <circle cx="50" cy="55" r="32" fill="url(#coconutGrad)" stroke="#064e3b" strokeWidth="2.5" />
+                        <circle cx="50" cy="58" r="23" fill="#f8fafc" />
+
+                        {/* Blushing */}
+                        <circle cx="34" cy="62" r="5" fill="#fca5a5" opacity="0.6" />
+                        <circle cx="66" cy="62" r="5" fill="#fca5a5" opacity="0.6" />
+
+                        {/* Eyes */}
+                        {isThinking ? (
+                            <>
+                                <path d="M 33 55 Q 38 52 41 56" stroke="#0f172a" strokeWidth="3" fill="none" strokeLinecap="round" />
+                                <circle cx="63" cy="55" r="3" fill="#0f172a" />
+                            </>
+                        ) : isHappy ? (
+                            <>
+                                <path d="M 30 57 Q 35 51 40 57" stroke="#0f172a" strokeWidth="3" fill="none" strokeLinecap="round" />
+                                <path d="M 60 57 Q 65 51 70 57" stroke="#0f172a" strokeWidth="3" fill="none" strokeLinecap="round" />
+                            </>
+                        ) : (
+                            <>
+                                <circle cx="36" cy="56" r="3.5" fill="#0f172a" />
+                                <circle cx="64" cy="56" r="3.5" fill="#0f172a" />
+                            </>
+                        )}
+
+                        {/* Blangkon */}
+                        <path d="M 18 42 Q 50 18 82 42 Q 50 36 18 42 Z" fill="url(#blangkonGrad)" stroke="#451a03" strokeWidth="1.5" />
+                        <circle cx="50" cy="22" r="7" fill="url(#blangkonGrad)" stroke="#451a03" strokeWidth="1" />
+
+                        {/* Red White Sash */}
+                        <path d="M 22 75 Q 50 88 78 75 T 74 84 Q 50 94 26 84 Z" fill="url(#indonesiaGrad)" stroke="#991b1b" strokeWidth="1" />
+
+                        {/* Mouth */}
+                        {isThinking ? (
+                            <path d="M 46 66 Q 50 63 54 66" stroke="#0f172a" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+                        ) : (
+                            <path d="M 44 64 Q 50 72 56 64" fill="#ef4444" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" />
+                        )}
+
+                        {/* Hands */}
+                        {isSalute ? (
+                            <path d="M 78 68 Q 88 50 82 42 Q 74 46 76 60" fill="#10b981" stroke="#064e3b" strokeWidth="2" strokeLinecap="round" />
+                        ) : (
+                            <path d="M 76 64 Q 88 56 86 48 Q 78 48 74 58" fill="#10b981" stroke="#064e3b" strokeWidth="2" strokeLinecap="round" className="animate-bounce" />
+                        )}
+                        <path d="M 24 64 Q 12 60 14 52 Q 22 52 26 58" fill="#10b981" stroke="#064e3b" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                );
+            };
+
+            return (
+                <div className="flex flex-col flex-1">
+                    
+                    {/* Top Alert Bar */}
+                    <div className="bg-slate-900 border-b border-red-900/30 py-2.5 px-4 md:px-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-300 gap-3">
+                        <div className="flex items-center gap-2">
+                            <span className="flex items-center gap-1 bg-red-600 text-white font-bold px-2.5 py-0.5 rounded text-[10px] uppercase tracking-wider animate-pulse">
+                                🇮🇩 NKRI MANDIRI
+                            </span>
+                            <span className="text-slate-400 font-semibold">Geo-Portal Kecamatan Ngadirojo Pacitan</span>
+                        </div>
+                        <div className="font-mono text-amber-400 flex items-center gap-2 font-bold">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                            {currentDate || 'Menghubungkan Database...'}
+                        </div>
+                    </div>
+
+                    {/* Header */}
+                    <header className="py-6 px-4 md:px-8 border-b border-red-900/20 bg-slate-900/40 backdrop-blur-xl sticky top-0 z-30 bg-batik-pattern">
+                        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6">
+                            
+                            <div className="flex items-center gap-4">
+                                <div className="relative p-1 rounded-2xl bg-gradient-to-tr from-red-600 to-amber-500 shadow-lg shadow-red-500/15">
+                                    <div className="bg-slate-950 p-2.5 rounded-[14px]">
+                                        {renderMascotSVG("w-14 h-14")}
+                                    </div>
+                                    <span className="absolute -bottom-1 -right-1 bg-red-600 text-[9px] font-bold text-white px-2.5 py-0.5 rounded-full border border-slate-950">
+                                        Si Lorok
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <h1 className="text-2xl md:text-3xl font-black tracking-wider text-red-500">
+                                            NGADIROJO <span className="text-white">PACITAN</span>
+                                        </h1>
+                                        <span className="text-[10px] px-2.5 py-1 rounded bg-red-950 border border-red-500 text-red-300 uppercase tracking-widest font-extrabold animate-flag">
+                                            Lorok Jaya
+                                        </span>
+                                    </div>
+                                    <p className="text-slate-400 text-xs md:text-sm mt-1 font-medium flex items-center gap-1.5">
+                                        <span>📍 Kabupaten Pacitan, Jawa Timur</span>
+                                        <span className="text-slate-600">•</span>
+                                        <span className="text-amber-500 font-semibold">Portal Budaya, Sejarah & Agraris</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Tab Menu Navigation (Added 'Sejarah & Mitos') */}
+                            <nav className="flex flex-wrap items-center justify-center gap-2 bg-slate-950/70 p-2 rounded-2xl border border-slate-800/80 w-full lg:w-auto">
+                                {[
+                                    { id: 'home', label: 'Beranda Utama', icon: '🏛️' },
+                                    { id: 'history', label: 'Sejarah & Mitos', icon: '📜' },
+                                    { id: 'villages', label: 'Jelajah 18 Desa', icon: '🏘️' },
+                                    { id: 'potential', label: 'Ekonomi & Kalkulator', icon: '🌴' },
+                                    { id: 'culture', label: 'Seni Budaya', icon: '🎭' },
+                                    { id: 'chat', label: 'Tanya Si Lorok AI', icon: '✨' },
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => {
+                                            setActiveTab(tab.id);
+                                            if (tab.id === 'chat') setMascotMood('happy');
+                                            else setMascotMood('wave');
+                                        }}
+                                        className={`flex items-center gap-2 px-3.5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${activeTab === tab.id ? 'bg-red-600 text-white shadow-lg shadow-red-600/25' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'}`}
+                                    >
+                                        <span>{tab.icon}</span>
+                                        {tab.label}
+                                    </button>
+                                ))}
+                            </nav>
+                        </div>
+                    </header>
+
+                    {/* Toast Notification */}
+                    {showNotification && (
+                        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 border-l-4 border-red-600 text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce max-w-sm">
+                            <span className="text-xl">🇮🇩</span>
+                            <p className="text-xs font-bold leading-normal">{notificationMsg}</p>
+                        </div>
+                    )}
+
+                    {/* Main Content View */}
+                    <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 space-y-8">
+                        
+                        {/* Jumbotron Hero Banner */}
+                        <div className="relative rounded-3xl bg-gradient-to-br from-red-950/75 via-slate-900 to-red-950/20 border border-red-900/30 p-6 md:p-10 shadow-2xl overflow-hidden bg-batik-pattern">
+                            <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+                            
+                            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                                <div className="lg:col-span-2 space-y-5">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-950/80 border border-amber-500/30 px-3 py-1 rounded-full">
+                                            KEDAULATAN KEPRIBADIAN LOKAL
+                                        </span>
+                                        <span className="text-[10px] bg-red-600/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full font-bold">
+                                            Pacitan Timur Hebat
+                                        </span>
+                                    </div>
+                                    <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                                        Eksplorasi Keindahan & <br />
+                                        <span className="text-gradient bg-gradient-to-r from-red-500 to-amber-400 bg-clip-text text-transparent">Budaya Ngadirojo Pacitan</span>
+                                    </h2>
+                                    <p className="text-slate-300 text-sm md:text-base leading-relaxed">
+                                        {ngadirojoPacitanData.description}
+                                    </p>
+
+                                    {/* Stats Grid */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3">
+                                        {[
+                                            { title: "Luas Wilayah", val: ngadirojoPacitanData.area, desc: "Sawah & Perkebunan" },
+                                            { title: "Ketinggian", val: ngadirojoPacitanData.elevation, desc: "Pesisir s/d Lereng" },
+                                            { title: "Kepadatan", val: ngadirojoPacitanData.population, desc: "Jiwa Berjiwa Sosial" },
+                                            { title: "Gerbang Hub", val: "Akses JLS Timur", desc: "Koneksi Strategis" }
+                                        ].map((spec, index) => (
+                                            <div key={index} className="bg-slate-950/90 border border-slate-800 p-3.5 rounded-2xl text-center hover:border-red-500/50 transition duration-300">
+                                                <span className="text-[9px] text-slate-500 uppercase font-black tracking-widest block">{spec.title}</span>
+                                                <span className="text-xs font-black text-white mt-1.5 block">{spec.val}</span>
+                                                <span className="text-[9px] text-slate-400 mt-0.5 block">{spec.desc}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Mascot Jumbotron Sidecard */}
+                                <div className="bg-gradient-to-b from-red-950/40 to-slate-950 border border-red-900/30 rounded-2xl p-6 text-center space-y-4 flex flex-col items-center justify-center relative animate-float">
+                                    {renderMascotSVG("w-28 h-28")}
+                                    <div className="space-y-1">
+                                        <h4 className="text-sm font-extrabold text-white">Ki Lurah Si Lorok</h4>
+                                        <p className="text-[10px] text-red-400 font-bold uppercase tracking-wider">Mascot Resmi Geo-Portal</p>
+                                    </div>
+                                    <p className="text-[11px] text-slate-400 italic leading-relaxed">
+                                        "Sugeng rawuh! Mari menjelajahi keindahan budaya aseli Lorok, mulai dari alat perkusi Oglor hingga Jangkrik Genggong bersama saya!"
+                                    </p>
+                                    <button 
+                                        onClick={() => {
+                                            setActiveTab('chat');
+                                            setMascotMood('happy');
+                                            triggerNotification("Mari berdialog langsung dengan Si Lorok AI!");
+                                        }}
+                                        className="bg-red-600 hover:bg-red-500 text-white font-bold text-[10px] uppercase tracking-wider px-5 py-3 rounded-xl transition duration-300 w-full"
+                                    >
+                                        Tanya Si Lorok Sekarang
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* TAB 1: HOME & GEOGRAPHY */}
+                        {activeTab === 'home' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
+                                
+                                <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6 flex flex-col justify-between bg-batik-pattern">
+                                    <div>
+                                        <span className="text-[9px] bg-red-950 text-red-400 border border-red-500/30 font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                            BENTANG ALAM SAMUDERA
+                                        </span>
+                                        <h3 className="text-xl font-extrabold text-white mt-3 flex items-center gap-2">
+                                            <span>🌊</span> Geografi Bahari & Keindahan Muara Kali Lorok
+                                        </h3>
+                                        <p className="text-sm text-slate-400 mt-2">
+                                            Kecamatan Ngadirojo dialiri oleh aliran sungai legendaris Kali Lorok yang berhilir di Samudera Hindia. Lanskap pesisirnya membentang luas berbalut pegunungan karst hijau nan megah.
+                                        </p>
+                                    </div>
+
+                                    {/* SVG Interactive Map */}
+                                    <div className="bg-slate-950 border border-slate-800 rounded-2xl h-80 flex items-center justify-center relative overflow-hidden p-4 group">
+                                        <div className="absolute top-4 left-4 text-[10px] font-mono text-slate-500">
+                                            INTERACTIVE SCHEMATIC: PACITAN TIMUR HIGHWAY
+                                        </div>
+
+                                        <svg className="w-full h-full max-w-md transition-transform duration-750 group-hover:scale-105" viewBox="0 0 400 300">
+                                            {/* Ocean Shore */}
+                                            <path d="M 10 240 Q 200 215 390 240 L 390 300 L 10 300 Z" className="fill-teal-950/60 stroke-emerald-500/30 stroke-2" />
+                                            <path d="M 10 255 Q 200 235 390 255" stroke="#0ea5e9" strokeWidth="4" className="opacity-80" strokeDasharray="5" />
+                                            <text x="200" y="280" textAnchor="middle" fill="#38bdf8" fontSize="12" fontWeight="bold" className="tracking-widest">SAMUDERA HINDIA</text>
+                                            
+                                            {/* Kali Lorok */}
+                                            <path d="M 220 10 Q 240 100 200 160 T 160 250" fill="none" stroke="#0ea5e9" strokeWidth="6" strokeLinecap="round" />
+                                            <text x="235" y="110" fill="#38bdf8" fontSize="8" transform="rotate(75, 235, 110)">Kali Lorok</text>
+
+                                            {/* Points of Interest */}
+                                            {/* Sidomulyo (Pantai Soge) */}
+                                            <circle cx="280" cy="220" r="10" className="fill-red-600 animate-ping opacity-35" />
+                                            <circle cx="280" cy="220" r="6" className="fill-red-500" />
+                                            <text x="280" y="240" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">Soge (Sidomulyo)</text>
+
+                                            {/* Wonokarto (Oglor Hub) */}
+                                            <circle cx="100" cy="80" r="6" className="fill-amber-500" />
+                                            <text x="100" y="70" textAnchor="middle" fill="#fbbf24" fontSize="8" fontWeight="bold">Wonokarto (Oglor)</text>
+
+                                            {/* Ngadirojo Centrum */}
+                                            <circle cx="180" cy="150" r="7" className="fill-red-600" />
+                                            <text x="180" y="135" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="bold">Pusat Lorok</text>
+                                        </svg>
+
+                                        <div className="absolute bottom-4 right-4 bg-slate-900/95 border border-slate-700 px-3 py-1.5 rounded-lg text-[9px] text-slate-300">
+                                            💡 Klik tab 'Seni Budaya' untuk ulasan Oglor & Jangkrik Genggong!
+                                        </div>
+                                    </div>
+
+                                    {/* JLS Banner */}
+                                    <div className="bg-gradient-to-r from-red-950 to-slate-950 border border-red-500/20 p-4 rounded-xl text-xs flex items-center gap-3">
+                                        <span className="text-2xl">🛣️</span>
+                                        <p className="text-slate-300 leading-relaxed">
+                                            <strong>Poros Jalur Lintas Selatan (JLS):</strong> Menghubungkan potensi pariwisata Pantai Soge secara langsung ke gerbang ekonomi nasional, meningkatkan taraf hidup pengrajin gula kelapa dan penggiat budaya Lorok secara masif.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Borders boundaries panel */}
+                                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6 flex flex-col justify-between bg-batik-pattern">
+                                    <div>
+                                        <span className="text-[9px] bg-amber-950 text-amber-400 border border-amber-500/30 font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                            BATAS WILAYAH ADAT
+                                        </span>
+                                        <h3 className="text-xl font-bold text-white mt-3">🗺️ Batas Kedaulatan Daerah</h3>
+                                        <p className="text-sm text-slate-400 mt-1">Cakupan batas fisik Kecamatan Ngadirojo Pacitan.</p>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {[
+                                            { label: "Utara", val: ngadirojoPacitanData.borders.utara, icon: "⛰️", detail: "Pegunungan Ponorogo" },
+                                            { label: "Timur", val: ngadirojoPacitanData.borders.timur, icon: "⚡", detail: "Pusat Energi Sudimoro" },
+                                            { label: "Selatan", val: ngadirojoPacitanData.borders.selatan, icon: "🌊", detail: "Samudera Lepas Hindia" },
+                                            { label: "Barat", val: ngadirojoPacitanData.borders.barat, icon: "🌲", detail: "Kawasan Hijau Tulakan" }
+                                        ].map((border, i) => (
+                                            <div key={i} className="flex items-center justify-between p-3.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-red-500/20 transition duration-300">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="p-2 bg-slate-900 rounded-lg text-lg border border-slate-800">{border.icon}</span>
+                                                    <div>
+                                                        <span className="text-[9px] font-bold text-slate-500 uppercase block">{border.label}</span>
+                                                        <span className="text-[9px] text-red-400">{border.detail}</span>
+                                                    </div>
+                                                </div>
+                                                <span className="text-xs text-slate-200 font-bold text-right max-w-[150px]">{border.val}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="p-4 bg-red-950/20 border border-red-900/40 rounded-xl text-center">
+                                        <span className="text-[10px] font-semibold text-red-300 block">Semboyan Pembangunan Lorok:</span>
+                                        <span className="text-xs font-bold text-white mt-1 block italic">"Manunggal Karya Mbangun Desa Swasembada"</span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        )}
+
+                        {/* NEW TAB: SEJARAH, TOKOH & MITOLOGI LOROK */}
+                        {activeTab === 'history' && (
+                            <div className="space-y-8 animate-fade-in">
+                                
+                                {/* Asal-usul Nama */}
+                                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 bg-batik-pattern">
+                                    <div className="max-w-3xl">
+                                        <span className="text-[9px] bg-red-950 text-red-400 border border-red-500/30 font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                            HISTORIOGRAFI LOKAL
+                                        </span>
+                                        <h3 className="text-2xl font-black text-white mt-3 serif-title">Asal-Usul Nama & Sejarah Bumi Lorok</h3>
+                                        <p className="text-sm text-slate-300 mt-4 leading-relaxed whitespace-pre-line">
+                                            {ngadirojoPacitanData.history.originText}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Timeline Sejarah */}
+                                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8">
+                                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                        <span>⏳</span> Garis Waktu Perkembangan Wilayah
+                                    </h3>
+                                    
+                                    <div className="relative border-l-2 border-red-600 ml-4 md:ml-8 space-y-8">
+                                        {ngadirojoPacitanData.history.timeline.map((item, idx) => (
+                                            <div key={idx} className="relative pl-6 md:pl-10">
+                                                {/* Bullet dot */}
+                                                <span className="absolute -left-2.5 top-1.5 w-5 h-5 rounded-full bg-slate-950 border-2 border-red-600 flex items-center justify-center">
+                                                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full"></span>
+                                                </span>
+                                                
+                                                <div className="bg-slate-950 p-5 rounded-2xl border border-slate-850 space-y-1 hover:border-red-500/20 transition duration-300">
+                                                    <span className="text-xs font-bold text-amber-400 font-mono">{item.era}</span>
+                                                    <h4 className="text-sm md:text-base font-extrabold text-white">{item.title}</h4>
+                                                    <p className="text-xs md:text-sm text-slate-400 leading-relaxed">{item.desc}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Tokoh Sejarah Utama */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+                                            <span className="text-3xl">⚔️</span>
+                                            <div>
+                                                <h4 className="text-lg font-bold text-white serif-title">Ki Ageng Lorok</h4>
+                                                <span className="text-xs text-red-400 font-bold uppercase tracking-wider">Eyang Gagak Pranolo</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+                                            Beliau adalah ksatria pelarian asal Mataram Islam yang melakukan babat alas spiritual pertama di muara Kali Lorok. Selain menyebarkan agama Islam, beliau dikenal sangat mencintai kelestarian lingkungan dan mengajari warga tata cara menyadap nira kelapa secara berkelanjutan tanpa merusak pohon.
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+                                            <span className="text-3xl">🛡️</span>
+                                            <div>
+                                                <h4 className="text-lg font-bold text-white serif-title">Mbah Ampok</h4>
+                                                <span className="text-xs text-red-400 font-bold uppercase tracking-wider">Kyai Ampok Pelindung Rakyat</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+                                            Merupakan sosok pahlawan lokal legendaris berotot baja yang melindungi segenap pemukiman Lorok dari serbuan hewan liar hutan belantara serta kelompok bandit atau upeti kolonial Belanda. Makamnya dijaga sebagai situs sejarah perjuangan rakyat Lorok yang pantang tunduk kepada penindasan.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Mitos & Urban Legend */}
+                                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6">
+                                    <div>
+                                        <span className="text-[9px] bg-red-950 text-red-400 border border-red-500/30 font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                            MITOLOGI & KEARIFAN LOKAL
+                                        </span>
+                                        <h3 className="text-2xl font-black text-white mt-3 serif-title">Mitos & Kisah Urban Legend</h3>
+                                        <p className="text-xs md:text-sm text-slate-400">Cerita lisan bernilai filosofis yang menjaga harmoni hidup manusia Lorok dengan alam sekitar.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {ngadirojoPacitanData.history.myths.map((myth, idx) => (
+                                            <div key={idx} className="bg-slate-950 p-5 rounded-2xl border border-slate-800 hover:border-red-500/30 transition-all duration-300 flex flex-col justify-between">
+                                                <div className="space-y-3">
+                                                    <span className="text-xs font-bold text-red-400 uppercase tracking-widest block">👻 MITOS LOROK</span>
+                                                    <h4 className="text-base font-extrabold text-white">{myth.title}</h4>
+                                                    <p className="text-[11px] text-slate-500 font-semibold uppercase">📍 {myth.location}</p>
+                                                    <p className="text-xs text-slate-400 leading-relaxed">{myth.desc}</p>
+                                                </div>
+                                                <div className="pt-4 border-t border-slate-900 mt-4 text-[10px] text-amber-500 italic font-semibold">
+                                                    *Pesan moral: Menjaga ekosistem alam
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                            </div>
+                        )}
+
+                        {/* TAB 3: EXPLORE 18 VILLAGES */}
+                        {activeTab === 'villages' && (
+                            <div className="space-y-6 animate-fade-in">
+                                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 bg-batik-pattern">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white">Administrasi Pemerintahan 18 Desa Ngadirojo</h3>
+                                        <p className="text-sm text-slate-400">Temukan potensi unggulan mandiri serta pilar pembangunan dari masing-masing desa di Lorok.</p>
+                                    </div>
+
+                                    {/* Search Box */}
+                                    <div className="relative w-full lg:w-96">
+                                        <input
+                                            type="text"
+                                            placeholder="Cari desa (cth: Wonokarto, Sidomulyo)..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full bg-slate-950 border border-slate-800 text-slate-200 placeholder-slate-500 rounded-xl py-3.5 pl-11 pr-4 text-xs md:text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition"
+                                        />
+                                        <span className="absolute left-4 top-4 text-slate-500">🔍</span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {filteredVillages.map((v, idx) => (
+                                        <div
+                                            key={idx}
+                                            onClick={() => {
+                                                setSelectedVillage(v);
+                                                setMascotMood('happy');
+                                                triggerNotification(`Membuka profil Desa ${v.name}`);
+                                            }}
+                                            className={`p-5 rounded-2xl bg-slate-900 border transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${selectedVillage?.name === v.name ? 'border-red-500 ring-1 ring-red-500 bg-gradient-to-b from-slate-900 to-red-950/20' : 'border-slate-800 hover:border-slate-700'}`}
+                                        >
+                                            <div className="flex justify-between items-start mb-3">
+                                                <span className="font-extrabold text-white text-lg">Desa {v.name}</span>
+                                                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-500/20">
+                                                    Pemerintahan Desa
+                                                </span>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-850">
+                                                    <span className="text-[9px] text-slate-500 block uppercase font-bold">Potensi Unggulan:</span>
+                                                    <span className="text-xs font-bold text-amber-400 mt-1 block">🌿 {v.potential}</span>
+                                                </div>
+                                                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{v.detail}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Expanded Detail Panel */}
+                                {selectedVillage && (
+                                    <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-red-950/20 border border-red-500/30 rounded-3xl p-6 md:p-8 space-y-4 animate-float relative overflow-hidden">
+                                        <div className="absolute top-4 right-4">
+                                            <button 
+                                                onClick={() => setSelectedVillage(null)} 
+                                                className="bg-slate-800 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition duration-300"
+                                            >
+                                                ✕ Tutup Panel
+                                            </button>
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl">🏡</span>
+                                            <div>
+                                                <h4 className="text-xl font-black text-white">Deskripsi Lengkap Desa {selectedVillage.name}</h4>
+                                                <p className="text-xs text-red-400 font-bold uppercase tracking-widest">Kecamatan Ngadirojo, Pacitan</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
+                                            <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-2">
+                                                <span className="text-xs text-slate-500 uppercase font-black block">Gambaran Geografis</span>
+                                                <p className="text-xs md:text-sm text-slate-300 leading-relaxed">{selectedVillage.detail}</p>
+                                            </div>
+                                            <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                                                <div>
+                                                    <span className="text-xs text-slate-500 uppercase font-black block">Fokus Pengembangan Sektoral</span>
+                                                    <span className="text-sm font-bold text-amber-400 block mt-1">⭐ {selectedVillage.potential}</span>
+                                                </div>
+                                                <p className="text-[11px] text-slate-500 mt-3 leading-relaxed">
+                                                    Didukung alokasi dana pembangunan berkelanjutan guna mewujudkan desa berdaulat pangan, mandiri energi, dan melestarikan warisan tradisi budaya leluhur Lorok.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* TAB 4: ECONOMICS & COCONUT CALCULATOR */}
+                        {activeTab === 'potential' && (
+                            <div className="space-y-8 animate-fade-in">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    
+                                    {/* Sektor List */}
+                                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6 bg-batik-pattern">
+                                        <div>
+                                            <span className="text-[9px] bg-red-950 text-red-400 border border-red-500/30 font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                KETAHANAN EKONOMI MIKRO
+                                            </span>
+                                            <h3 className="text-xl font-bold text-white mt-3">💼 Kemandirian Industri Rakyat Lorok</h3>
+                                            <p className="text-sm text-slate-400">Pondasi utama perekonomian mandiri warga Ngadirojo Pacitan.</p>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            {ngadirojoPacitanData.economics.map((eco, idx) => (
+                                                <div key={idx} className="flex gap-4 p-4 bg-slate-950 rounded-2xl border border-slate-800 hover:border-red-500/20 transition duration-300">
+                                                    <div className="p-3 bg-red-950/50 rounded-xl text-red-400 border border-red-500/20 h-fit text-xl">
+                                                        {eco.icon === 'waves' && '🌊'}
+                                                        {eco.icon === 'sugar' && '🥥'}
+                                                        {eco.icon === 'cookie' && '🍪'}
+                                                        {eco.icon === 'gem' && '💎'}
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-white text-base">{eco.title}</h4>
+                                                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">{eco.desc}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Coconut Calculator */}
+                                    <div className="bg-gradient-to-br from-slate-900 to-red-950/20 border border-red-500/20 rounded-3xl p-6 md:p-8 flex flex-col justify-between bg-batik-pattern">
+                                        <div className="space-y-3">
+                                            <span className="text-[9px] bg-amber-950 text-amber-400 border border-amber-500/30 font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                KALKULATOR HASIL NIRA KELAPA
+                                            </span>
+                                            <h3 className="text-xl font-bold text-white">🥥 Simulasi Hasil Produksi Gula Kelapa</h3>
+                                            <p className="text-xs text-slate-300 leading-relaxed">
+                                                Penyadapan air nira kelapa (nderes) merupakan mata pencaharian utama warga Lorok. Masukkan estimasi jumlah pohon produktif Anda untuk menghitung potensi hasil harian.
+                                            </p>
+                                        </div>
+
+                                        <form onSubmit={handleCalculateSugar} className="space-y-4 mt-6">
+                                            <div>
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">
+                                                    Estimasi Jumlah Pohon Kelapa Produktif Disadap:
+                                                </label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        max="1000"
+                                                        value={coconutCount}
+                                                        onChange={(e) => setCoconutCount(Number(e.target.value))}
+                                                        className="bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-red-500 w-full"
+                                                    />
+                                                    <button 
+                                                        type="submit" 
+                                                        className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition duration-300 whitespace-nowrap"
+                                                    >
+                                                        Hitung Hasil
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                        {/* Result */}
+                                        <div className="mt-6 bg-slate-950 p-5 rounded-2xl border border-slate-800 min-h-[140px] flex flex-col justify-center">
+                                            {calculatedSugar ? (
+                                                <div className="space-y-3">
+                                                    <span className="text-[9px] font-bold text-red-400 block uppercase tracking-widest">ESTIMASI PANEN HARIAN</span>
+                                                    <div className="text-2xl md:text-3xl font-black text-white tracking-tight">{calculatedSugar.total} Kg Gula Cetak / Hari</div>
+                                                    <div className="text-xs text-amber-400 font-bold">
+                                                        Estimasi Nilai Jual: ± Rp {calculatedSugar.earnings} / Hari (Asumsi Rp 18.000/Kg)
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-500 leading-normal">{calculatedSugar.desc}</p>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center text-slate-500 space-y-2 py-4">
+                                                    <span className="text-3xl block">📊</span>
+                                                    <p className="text-xs">Ubah nilai pohon lalu tekan tombol Hitung Hasil.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 5: SENI & BUDAYA (REVISED WITH OGLOR & JANGKRIK GENGGONG) */}
+                        {activeTab === 'culture' && (
+                            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 bg-batik-pattern animate-fade-in">
+                                <div>
+                                    <span className="text-[9px] bg-red-950 text-red-400 border border-red-500/30 font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                        KEPRIBADIAN DALAM KEBUDAYAAN NASIONAL
+                                    </span>
+                                    <h3 className="text-2xl font-black text-white mt-3">🎭 Seni Budaya & Identitas Kerakyatan Lorok</h3>
+                                    <p className="text-xs md:text-sm text-slate-400 leading-relaxed mt-2">
+                                        Kecamatan Ngadirojo Pacitan memelihara kesenian-kesenian rakyat unik yang bernapaskan kerukunan, suka cita gotong royong, dan heroisme nusantara.
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                                    {ngadirojoPacitanData.culture.map((art, idx) => (
+                                        <div key={idx} className="bg-slate-950 p-5 rounded-2xl border border-slate-800 hover:border-red-500/30 transition-all duration-300 flex flex-col justify-between">
+                                            <div className="space-y-3">
+                                                <div className="text-2xl">
+                                                    {art.icon === 'music' && '🥁'}
+                                                    {art.icon === 'bug' && '🦗'}
+                                                    {art.icon === 'anchor' && '⚓'}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <h4 className="text-lg font-bold text-white">{art.title}</h4>
+                                                    <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider mt-0.5">📍 {art.origin}</span>
+                                                </div>
+                                                <p className="text-xs text-slate-400 leading-relaxed">{art.desc}</p>
+                                            </div>
+                                            <div className="pt-4 border-t border-slate-900/80 mt-4 flex items-center justify-between">
+                                                <span className="text-[9px] text-red-400 font-bold uppercase tracking-widest">Khas Ngadirojo</span>
+                                                <span className="text-[9px] bg-red-950 text-white px-2 py-0.5 rounded font-mono">Lokal</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-center gap-6">
+                                    {renderMascotSVG("w-20 h-20")}
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] text-amber-400 uppercase font-bold tracking-widest block">Catatan Ki Lurah Si Lorok:</span>
+                                        <p className="text-xs text-slate-300 leading-relaxed">
+                                            "Ayo dulur, mari lestarikan **Musik Oglor** asli Wonokarto dan **Tari Jangkrik Genggong** dari Sidomulyo. Dua seni ini mencerminkan sifat asli wong Lorok yang ramah, gemar bercanda gurau, rukun, dan menjunjung tinggi gotong royong pancasila!"
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 6: AI CHAT ASSISTANT FEATURING MASCOT */}
+                        {activeTab === 'chat' && (
+                            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 md:p-6 flex flex-col h-[580px] justify-between bg-batik-pattern animate-fade-in">
+                                
+                                <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-1 bg-red-600 rounded-xl">
+                                            {renderMascotSVG("w-11 h-11")}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-base font-bold text-white flex items-center gap-1">
+                                                Si Lorok AI Assistant 🇮🇩
+                                            </h3>
+                                            <p className="text-[10px] text-slate-400">Pakar Kebudayaan, Sejarah & Geospasial Lorok Pacitan</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-[9px] bg-red-950 text-red-400 px-3 py-1.5 rounded-full border border-red-500/20 font-bold uppercase tracking-widest">
+                                        GEMINI 2.5 FLASH ACTIVE
+                                    </span>
+                                </div>
+
+                                {/* Message Thread */}
+                                <div className="flex-1 overflow-y-auto my-4 p-4 space-y-4 bg-slate-950 rounded-2xl border border-slate-850 flex flex-col custom-scroll">
+                                    {messages.map((msg, i) => (
+                                        <div
+                                            key={i}
+                                            className={`max-w-[85%] rounded-2xl p-4 text-xs md:text-sm leading-relaxed ${msg.role === 'user' ? 'bg-red-600 text-white self-end rounded-tr-none' : 'bg-slate-900 text-slate-200 self-start rounded-tl-none border border-slate-800/80'}`}
+                                        >
+                                            <span className="text-[9px] font-black block uppercase mb-1.5 tracking-widest text-slate-400">
+                                                {msg.role === 'user' ? '👤 Penanya' : '🥥 Si Lorok'}
+                                            </span>
+                                            <div className="whitespace-pre-line">{msg.text}</div>
+                                        </div>
+                                    ))}
+                                    {isAiLoading && (
+                                        <div className="bg-slate-900 text-slate-400 self-start rounded-2xl rounded-tl-none border border-slate-800/80 p-4 flex items-center gap-2.5">
+                                            <span className="w-2 h-2 rounded-full bg-red-500 animate-bounce"></span>
+                                            <span className="w-2 h-2 rounded-full bg-red-500 animate-bounce [animation-delay:0.2s]"></span>
+                                            <span className="w-2 h-2 rounded-full bg-red-500 animate-bounce [animation-delay:0.4s]"></span>
+                                            <span className="text-xs font-semibold">Si Lorok sedang mengetik...</span>
+                                        </div>
+                                    )}
+                                    <div ref={chatEndRef} />
+                                </div>
+
+                                {/* Quick Prompts */}
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    {[
+                                        "Siapa Ki Ageng Lorok?",
+                                        "Mitos Buaya Putih Soge itu apa?",
+                                        "Kesenian Oglor Desa Wonokarto?",
+                                        "Tokoh Mbah Ampok itu siapa?"
+                                    ].map((pill, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => {
+                                                setInputMessage(pill);
+                                                setMascotMood('think');
+                                            }}
+                                            className="text-[10px] bg-slate-800/60 hover:bg-slate-800 hover:text-red-400 text-slate-300 px-3 py-2 rounded-full border border-slate-700 transition"
+                                        >
+                                            🇮🇩 {pill}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Chat Input Field */}
+                                <form onSubmit={handleSendMessage} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Tanyakan sejarah, tokoh pelopor, mitos, kesenian baru, atau 18 desa di Lorok..."
+                                        value={inputMessage}
+                                        onChange={(e) => setInputMessage(e.target.value)}
+                                        className="flex-1 bg-slate-950 border border-slate-800 text-slate-200 placeholder-slate-500 rounded-xl px-4 py-3.5 text-xs focus:outline-none focus:border-red-500"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={isAiLoading || !inputMessage.trim()}
+                                        className="bg-red-600 hover:bg-red-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-extrabold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition duration-300"
+                                    >
+                                        Tanya
+                                    </button>
+                                </form>
+
+                            </div>
+                        )}
+
+                    </main>
+
+                    {/* Nationalist Footer */}
+                    <footer className="mt-12 bg-slate-900 border-t border-red-900/20 py-8 px-4 text-center bg-batik-pattern">
+                        <div className="max-w-7xl mx-auto space-y-4">
+                            <div className="flex justify-center gap-3">
+                                <span className="text-xl">🇮🇩</span>
+                                <span className="text-xl">📜</span>
+                                <span className="text-xl">🌊</span>
+                            </div>
+                            <p className="text-xs md:text-sm text-slate-300 font-extrabold tracking-wider uppercase">
+                                GEOPORTAL NGADIROJO (LOROK) PACITAN — KEPRIBADIAN DALAM KEBUDAYAAN & HISTORIOGRAFI NUSANTARA
+                            </p>
+                            <p className="text-[11px] text-slate-500 leading-normal max-w-2xl mx-auto">
+                                Seluruh data diselaraskan dengan publikasi resmi Ngadirojo Dalam Angka (BPS Pacitan). Dikembangkan secara gotong-royong demi pelestarian sejarah luhur dan kebudayaan asli nusantara.
+                            </p>
+                        </div>
+                    </footer>
+
+                </div>
+            );
+        }
+
+        // Render App
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    </script>
+</body>
+</html>
+
+```
